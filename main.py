@@ -1,8 +1,16 @@
 import pandas as pd
 import tkinter as tk
 import random
-
+import json
+import requests
+import os
 BACKGROUND_COLOR = "#B1DDC6"
+
+url = 'https://farasa.qcri.org/webapi/diacritize/'
+api_key = os.environ['farasa_api_key']
+# qMLJCUPWzzlGNCtKFF
+
+
 try:
     data = pd.read_csv('data/known_words.csv')
 except :
@@ -11,7 +19,10 @@ except :
     data = pd.read_csv('data/known_words.csv')
 word_list = data.to_dict(orient='records')
 ran = random.choice(word_list)
-
+text = ran['Arabic']
+payload = {'text': text, 'api_key': api_key}
+data = requests.post(url, data=payload)
+result = json.loads(data.text)
 
 # Random word from csv file
 
@@ -24,7 +35,8 @@ def random_word():
         e.to_csv('data/known_words.csv')
     finally:
         card.itemconfig(title, text='Arabic')
-        card.itemconfig(new_word, text=ran['Arabic'])
+        text = ran['Arabic']
+        card.itemconfig(new_word, text=result['text'])
         card.itemconfig(flip, image=front_card_img)
         window.after(3000, flip_card)
 
@@ -57,7 +69,7 @@ wrong_button_img = tk.PhotoImage(file='images/wrong.png')
 card = tk.Canvas(width=800, height=526, highlightthickness=0, bg=BACKGROUND_COLOR)
 flip = card.create_image(400, 263, image=front_card_img)
 title = card.create_text(400, 100, text='Arabic', font=('Ariel', 40, 'italic'))
-new_word = card.create_text(400, 255, text=ran['Arabic'], font=('Ariel', 60, 'bold'))
+new_word = card.create_text(400, 255, text=result['text'], font=('Ariel', 60, 'bold'))
 
 card.grid(row=0, column=0, columnspan=2)
 
